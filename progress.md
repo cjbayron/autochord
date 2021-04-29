@@ -9,3 +9,13 @@
 	- 637 - Human Nature - Michael Jackson
 	- 270 - In My Room - The Beach Boys
 	- 18 - Kiss On My List - Daryl Hall & John Oates
+
+### 04/26
+
+- install nnls-chroma VAMP plugin (in Linux)
+	- copy .so file to /usr/local/lib/vamp (create if directory not exists)
+	- run `sudo ldconfig`
+
+### 04/30
+
+- add DTW comparison
