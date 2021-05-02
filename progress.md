@@ -19,3 +19,7 @@
 ### 04/30
 
 - add DTW comparison
+
+### 05/02
+
+- finished DTW comparison, proceeding to training prep
