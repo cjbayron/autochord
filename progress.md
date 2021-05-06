@@ -23,3 +23,15 @@
 ### 05/02
 
 - finished DTW comparison, proceeding to training prep
+
+### 05/03
+
+- just find a way to convert the features as `np.array`??? `model.fit` can handle it
+
+### 05/05
+
+- stop watching; just find a way to integrate custom dataset
+
+### 05/06
+
+- loading prep
