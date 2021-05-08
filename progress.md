@@ -35,3 +35,7 @@
 ### 05/06
 
 - loading prep
+
+### 05/08
+
+- can encode chords to numbers
