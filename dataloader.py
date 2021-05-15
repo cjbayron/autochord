@@ -75,21 +75,20 @@ class SimpleChromaDataset():
         feat_label_files: tuple of NumPy binary files to load the data from,
             interpreted as (vector_array_file, label_array_file)
         """
-        self.chroma_vectors = None
-        self.chroma_labels = None
-        self.train_split = None
-        self.val_splits = None
-        self.test_split = None
-
         if feat_label_files:
             assert(len(feat_label_files) == 2)
             vectors_file, labels_file = feat_label_files
             self.chroma_vectors = np.load(vectors_file)
             self.chord_labels = np.load(labels_file)
-        else:
+
+        else: #TODO: implement extracting vectors and labels from the files
             pass
 
+        self.classes = set(self.chord_labels)
+        self.n_class = len(self.classes)
+        print('Loaded features and labels.')
         self.train_split, self.val_splits, self.test_split = self.get_splits()
+        print('Split into train, val, test.')
 
     def get_splits(self, validate=True):
         """
@@ -98,9 +97,9 @@ class SimpleChromaDataset():
         The split is done in a way that each class have equal representation
         in the test and validation split
         """
-        feats, labels = self.chroma_vectors, self.chroma_labels
+        feats, labels = self.chroma_vectors, self.chord_labels
 
-        classes = list(set(labels))
+        classes = list(self.classes)
         classes.sort()
         
         if validate:
