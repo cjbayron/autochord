@@ -8,6 +8,9 @@ _NUM_TEST_PER_CLASS = 1000
 _NUM_VAL_PER_CLASS = 4000
 _NUM_VAL_SPLITS = 5
 
+_CHROMA_NOTES = ['A','Bb','B', 'C','Db','D','Eb','E','F','Gb','G','Ab']
+_CHROMA_FEAT_NAMES = [f'{note}(bass)' for note in _CHROMA_NOTES] + _CHROMA_NOTES
+
 
 def shuffle_set(array_set):
     """ Shuffle in unison all arrays in array_set """
