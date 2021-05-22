@@ -73,6 +73,12 @@ class SimpleChromaDataset():
     The naivete of this representation is assuming each chroma vectors
     as independent feature i.e. no interframe dependencies, etc.
     """
+    _MAJMIN_CLASSES = ['N',
+       'C:maj','Db:maj','D:maj','Eb:maj','E:maj','F:maj',
+       'Gb:maj','G:maj','Ab:maj','A:maj','Bb:maj','B:maj',
+       'C:min','Db:min','D:min','Eb:min','E:min','F:min',
+       'Gb:min','G:min','Ab:min','A:min','Bb:min','B:min']
+
     def __init__(self, feat_label_files=None):
         """
         feat_label_files: tuple of NumPy binary files to load the data from,
