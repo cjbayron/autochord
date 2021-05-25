@@ -1,6 +1,8 @@
 """ Loader for Billboard data features and labels """
 import numpy as np
 from numpy.random import default_rng
+import pandas as pd
+import mir_eval
 
 
 _SEED = 0
@@ -10,6 +12,97 @@ _NUM_VAL_SPLITS = 5
 
 _CHROMA_NOTES = ['A','Bb','B', 'C','Db','D','Eb','E','F','Gb','G','Ab']
 _CHROMA_FEAT_NAMES = [f'{note}(bass)' for note in _CHROMA_NOTES] + _CHROMA_NOTES
+
+# bitmaps of chord qualities
+_MAJ_BITMAP = mir_eval.chord.quality_to_bitmap('maj')
+_MIN_BITMAP = mir_eval.chord.quality_to_bitmap('min')
+_MAJ7_BITMAP = mir_eval.chord.quality_to_bitmap('maj7')
+_MIN7_BITMAP = mir_eval.chord.quality_to_bitmap('min7')
+
+_NUM_SEMITONE = 12
+_BASE_DIR = 'data/McGill-Billboard'
+
+#----------
+# Billboard data loading functions
+def get_chroma_matrix(_id, return_timestamps=False):
+    """ Load bothchroma(bass-treble) vectors from Billboard dataset """
+    
+    fn = f'{_BASE_DIR}/{_id:04d}/bothchroma.csv'
+    contents = pd.read_csv(fn, header=None)
+    
+    # we only get 3rd column onwards
+    # (first column empty, 2nd column time tick)
+    bothchroma = contents[contents.columns[2:]].values
+    if not return_timestamps:
+        return bothchroma
+    
+    start_times = contents[contents.columns[1]].values
+    step_size = start_times[1]
+    end_times = np.append(start_times[1:], [start_times[-1]+step_size], axis=0)
+    timestamps = np.vstack((start_times, end_times)).T
+    return timestamps, bothchroma
+
+
+def get_chord_labels(_id, label_type='majmin'):
+    """ Load chord labels from .LAB files
+    
+    label_type: majmin, majmin7, majmininv, majmin7inv, full
+    """
+    lab_fn = f'{_BASE_DIR}/{_id:04d}/{label_type}.lab'
+    # any line starting w/ \n is ignored e.g. blank lines
+    timestamps, chord_labels = mir_eval.io.load_labeled_intervals(lab_fn, comment='\n')
+    return timestamps, chord_labels
+
+
+def encode_chords_single_label(chord_labels):
+    """ Encode chord labels to a single label (semitone/root, quality in one) """
+    
+    # third array is bass number, which we ignore
+    root_classes, quality_classes, _ = mir_eval.chord.encode_many(chord_labels)
+    root_classes += 1 # add 1 to shift No Chord (-1) to 0
+
+    min_chords_filt = np.all(quality_classes == _MIN_BITMAP, axis=1)
+    maj7_chords_filt = np.all(quality_classes == _MAJ7_BITMAP, axis=1)
+    min7_chords_filt = np.all(quality_classes == _MIN7_BITMAP, axis=1)
+
+    root_classes[min_chords_filt] += _NUM_SEMITONE
+    root_classes[maj7_chords_filt] += _NUM_SEMITONE*2
+    root_classes[min7_chords_filt] += _NUM_SEMITONE*3
+
+    return root_classes
+
+
+def get_chord_features_and_labels(_id):
+    """ Get chroma vectors and chord labels """
+    chroma_timestamps, chroma_vectors = get_chroma_matrix(_id, return_timestamps=True)
+    chord_timestamps, chord_labels_str = get_chord_labels(_id)
+    chord_labels = encode_chords_single_label(chord_labels_str)
+
+    assert(len(chroma_timestamps) == len(chroma_vectors))
+    assert(len(chord_timestamps) == len(chord_labels))
+
+    # label for each chroma vector
+    chromavec_labels = np.zeros(len(chroma_vectors)).astype(np.int)-1 # all -1's
+    st_ix = 0 # lower bound for updating labels
+    for i, (ts, chord_label) in enumerate(zip(chord_timestamps, chord_labels)):
+        # get indices of chroma timestamps within duration of current chord
+        in_cur_chord = (chroma_timestamps[st_ix:, 0] >= ts[0]) \
+                        & (chroma_timestamps[st_ix:, 1] <= ts[1])
+        chromavec_labels[st_ix:][in_cur_chord] = chord_label
+
+        # update lower bound
+        in_cur_chord = in_cur_chord.astype(int)
+        transitions = in_cur_chord[1:] - in_cur_chord[:-1]
+        # we get index of first occurence of True->False transition
+        # False-True = -1
+        TtoF_ixs = np.where(transitions==-1)[0]
+
+        if len(TtoF_ixs) > 0:
+            st_ix += (TtoF_ixs[0] + 1) # +1 due to offset by diffing to get transitions
+
+    remove_ambiguous_mask = (chromavec_labels != -1)
+    return chroma_vectors[remove_ambiguous_mask], chromavec_labels[remove_ambiguous_mask]
+#----------
 
 
 def shuffle_set(array_set):
