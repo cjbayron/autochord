@@ -10,14 +10,22 @@ _NUM_TEST_PER_CLASS = 1000
 _NUM_VAL_PER_CLASS = 4000
 _NUM_VAL_SPLITS = 5
 
-_CHROMA_NOTES = ['A','Bb','B', 'C','Db','D','Eb','E','F','Gb','G','Ab']
-_CHROMA_FEAT_NAMES = [f'{note}(bass)' for note in _CHROMA_NOTES] + _CHROMA_NOTES
+_CHROMA_NOTES = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B']
+_CHROMA_NOTES_CHORDINO = ['A','Bb','B', 'C','Db','D','Eb','E','F','Gb','G','Ab']
+_CHROMA_FEAT_NAMES = [f'{note}(bass)' for note in _CHROMA_NOTES_CHORDINO] + _CHROMA_NOTES_CHORDINO
 
 # bitmaps of chord qualities
 _MAJ_BITMAP = mir_eval.chord.quality_to_bitmap('maj')
 _MIN_BITMAP = mir_eval.chord.quality_to_bitmap('min')
 _MAJ7_BITMAP = mir_eval.chord.quality_to_bitmap('maj7')
 _MIN7_BITMAP = mir_eval.chord.quality_to_bitmap('min7')
+
+_MAJMIN_CLASSES = ['N', *[f'{note}:maj' for note in _CHROMA_NOTES],
+                   *[f'{note}:min' for note in _CHROMA_NOTES]]
+_MAJMIN7_CLASSES = _MAJMIN_CLASSES + [f'{chord}7' for chord in _MAJMIN_CLASSES[1:]]
+
+_MAJMIN_CLASS_INDEX_MAP = {chord:index for index,chord in enumerate(_MAJMIN_CLASSES)}
+_MAJMIN7_CLASS_INDEX_MAP = {chord:index for index,chord in enumerate(_MAJMIN7_CLASSES)}
 
 _NUM_SEMITONE = 12
 _BASE_DIR = 'data/McGill-Billboard'
@@ -55,7 +63,10 @@ def get_chord_labels(_id, label_type='majmin'):
 
 
 def encode_chords_single_label(chord_labels):
-    """ Encode chord labels to a single label (semitone/root, quality in one) """
+    """
+    Encode chord labels to a single label (semitone/root, quality in one)
+    Support encoding to majmin and majmin7 labels
+    """
     
     # third array is bass number, which we ignore
     root_classes, quality_classes, _ = mir_eval.chord.encode_many(chord_labels)
@@ -72,10 +83,10 @@ def encode_chords_single_label(chord_labels):
     return root_classes
 
 
-def get_chord_features_and_labels(_id):
+def get_chord_features_and_labels(_id, label_type='majmin'):
     """ Get chroma vectors and chord labels """
     chroma_timestamps, chroma_vectors = get_chroma_matrix(_id, return_timestamps=True)
-    chord_timestamps, chord_labels_str = get_chord_labels(_id)
+    chord_timestamps, chord_labels_str = get_chord_labels(_id, label_type=label_type)
     chord_labels = encode_chords_single_label(chord_labels_str)
 
     assert(len(chroma_timestamps) == len(chroma_vectors))
@@ -166,11 +177,6 @@ class SimpleChromaDataset():
     The naivete of this representation is assuming each chroma vectors
     as independent feature i.e. no interframe dependencies, etc.
     """
-    _MAJMIN_CLASSES = ['N',
-       'C:maj','Db:maj','D:maj','Eb:maj','E:maj','F:maj',
-       'Gb:maj','G:maj','Ab:maj','A:maj','Bb:maj','B:maj',
-       'C:min','Db:min','D:min','Eb:min','E:min','F:min',
-       'Gb:min','G:min','Ab:min','A:min','Bb:min','B:min']
 
     def __init__(self, feat_label_files=None):
         """
