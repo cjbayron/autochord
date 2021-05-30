@@ -3,6 +3,7 @@ import numpy as np
 from numpy.random import default_rng
 import pandas as pd
 import mir_eval
+import matplotlib.pyplot as plt
 
 
 _SEED = 0
@@ -29,6 +30,7 @@ _MAJMIN7_CLASS_INDEX_MAP = {chord:index for index,chord in enumerate(_MAJMIN7_CL
 
 _NUM_SEMITONE = 12
 _BASE_DIR = 'data/McGill-Billboard'
+
 
 #----------
 # Billboard data loading functions
@@ -111,8 +113,27 @@ def get_chord_features_and_labels(_id, label_type='majmin'):
         if len(TtoF_ixs) > 0:
             st_ix += (TtoF_ixs[0] + 1) # +1 due to offset by diffing to get transitions
 
+    # filter? np.all(chroma_vectors <= 0.01, axis=1)
+
     remove_ambiguous_mask = (chromavec_labels != -1)
     return chroma_vectors[remove_ambiguous_mask], chromavec_labels[remove_ambiguous_mask]
+
+
+def encode_to_chordino_chroma(chord_label):
+    root, quality_map, _ = mir_eval.chord.encode(chord_label)
+    root = (root+3)%12 # add 3 to map to chordino chroma
+    chord_bitmap = mir_eval.chord.rotate_bitmap_to_root(quality_map, root) 
+    return root, chord_bitmap
+
+
+def plot_chordino_chroma(chroma):
+    assert((len(chroma)==12) or (len(chroma)==24))
+    plt.barh(range(len(chroma)), chroma)
+    notes = _CHROMA_NOTES_CHORDINO
+    if len(chroma) == 24:
+        notes = notes + notes # duplicate
+    plt.yticks(range(len(chroma)), notes)
+    plt.tight_layout()
 #----------
 
 
