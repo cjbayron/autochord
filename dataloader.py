@@ -34,7 +34,7 @@ _BASE_DIR = 'data/McGill-Billboard'
 
 #----------
 # Billboard data loading functions
-def get_chroma_matrix(_id, return_timestamps=False):
+def get_chroma_matrix(_id, return_timestamps=False, return_step_size=False):
     """ Load bothchroma(bass-treble) vectors from Billboard dataset """
     
     fn = f'{_BASE_DIR}/{_id:04d}/bothchroma.csv'
@@ -43,14 +43,17 @@ def get_chroma_matrix(_id, return_timestamps=False):
     # we only get 3rd column onwards
     # (first column empty, 2nd column time tick)
     bothchroma = contents[contents.columns[2:]].values
-    if not return_timestamps:
+    if (not return_timestamps) and (not return_step_size):
         return bothchroma
     
     start_times = contents[contents.columns[1]].values
     step_size = start_times[1]
+    if not return_timestamps:
+        return (step_size, bothchroma)
+
     end_times = np.append(start_times[1:], [start_times[-1]+step_size], axis=0)
     timestamps = np.vstack((start_times, end_times)).T
-    return timestamps, bothchroma
+    return (step_size, timestamps, bothchroma)
 
 
 def get_chord_labels(_id, label_type='majmin'):
@@ -85,9 +88,14 @@ def encode_chords_single_label(chord_labels):
     return root_classes
 
 
-def get_chord_features_and_labels(_id, label_type='majmin'):
-    """ Get chroma vectors and chord labels """
-    chroma_timestamps, chroma_vectors = get_chroma_matrix(_id, return_timestamps=True)
+def get_chord_features_and_labels(_id, label_type='majmin', remove_ambiguous=True):
+    """ Get chroma vectors and chord labels
+
+    if not remove_ambiguous: label whole song
+
+    """
+    step_size, chroma_timestamps, chroma_vectors = get_chroma_matrix(_id,
+        return_timestamps=True,return_step_size=True)
     chord_timestamps, chord_labels_str = get_chord_labels(_id, label_type=label_type)
     chord_labels = encode_chords_single_label(chord_labels_str)
 
@@ -101,6 +109,7 @@ def get_chord_features_and_labels(_id, label_type='majmin'):
         # get indices of chroma timestamps within duration of current chord
         in_cur_chord = (chroma_timestamps[st_ix:, 0] >= ts[0]) \
                         & (chroma_timestamps[st_ix:, 1] <= ts[1])
+        # TODO: handle boundaries
         chromavec_labels[st_ix:][in_cur_chord] = chord_label
 
         # update lower bound

@@ -39,3 +39,15 @@
 ### 05/08
 
 - can encode chords to numbers
+
+### 06/01
+
+- review onset, tempo estimation (we'll use it on chroma)
+
+### 06/09
+
+- how to use TFA CRF (does the input/output make sense?)
+
+### 06/12
+
+- need to implement fully-labelled song
