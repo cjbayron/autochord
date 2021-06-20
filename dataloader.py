@@ -109,8 +109,27 @@ def get_chord_features_and_labels(_id, label_type='majmin', remove_ambiguous=Tru
         # get indices of chroma timestamps within duration of current chord
         in_cur_chord = (chroma_timestamps[st_ix:, 0] >= ts[0]) \
                         & (chroma_timestamps[st_ix:, 1] <= ts[1])
-        # TODO: handle boundaries
         chromavec_labels[st_ix:][in_cur_chord] = chord_label
+
+        if not remove_ambiguous:
+            # boundary handling
+            head_overlap = (chroma_timestamps[st_ix:, 0] < ts[0]) \
+                            & (chroma_timestamps[st_ix:, 1] > ts[0])
+            tail_overlap = (chroma_timestamps[st_ix:, 0] < ts[1]) \
+                            & (chroma_timestamps[st_ix:, 1] > ts[1])
+
+            if any(head_overlap):
+                assert(len(chromavec_labels[st_ix:][head_overlap]) == 1)
+                overlap_size = chroma_timestamps[st_ix:, 1][head_overlap]-ts[0]
+                if overlap_size >= (step_size/2.0):
+                    chromavec_labels[st_ix:][head_overlap] = chord_label
+
+            if any(tail_overlap):
+                assert(len(chromavec_labels[st_ix:][tail_overlap]) == 1)
+                overlap_size = ts[1]-chroma_timestamps[st_ix:, 0][tail_overlap]
+                if overlap_size >= (step_size/2.0):
+                    chromavec_labels[st_ix:][tail_overlap] = chord_label
+                    st_ix += 1 # offset st_ix to skip the overlap in next iteration
 
         # update lower bound
         in_cur_chord = in_cur_chord.astype(int)
@@ -123,8 +142,10 @@ def get_chord_features_and_labels(_id, label_type='majmin', remove_ambiguous=Tru
             st_ix += (TtoF_ixs[0] + 1) # +1 due to offset by diffing to get transitions
 
     # filter? np.all(chroma_vectors <= 0.01, axis=1)
-
     remove_ambiguous_mask = (chromavec_labels != -1)
+    if not remove_ambiguous:
+        assert(all(remove_ambiguous_mask))
+
     return chroma_vectors[remove_ambiguous_mask], chromavec_labels[remove_ambiguous_mask]
 
 
