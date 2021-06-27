@@ -101,6 +101,7 @@ def get_chord_features_and_labels(_id, label_type='majmin', remove_ambiguous=Tru
 
     assert(len(chroma_timestamps) == len(chroma_vectors))
     assert(len(chord_timestamps) == len(chord_labels))
+    n_labels = len(chord_labels)
 
     # label for each chroma vector
     chromavec_labels = np.zeros(len(chroma_vectors)).astype(np.int)-1 # all -1's
@@ -144,6 +145,11 @@ def get_chord_features_and_labels(_id, label_type='majmin', remove_ambiguous=Tru
     # filter? np.all(chroma_vectors <= 0.01, axis=1)
     remove_ambiguous_mask = (chromavec_labels != -1)
     if not remove_ambiguous:
+        if not all(remove_ambiguous_mask):
+            assert(np.where(~remove_ambiguous_mask)[0][0]==st_ix)
+            chromavec_labels[st_ix:] = chord_label # assign last chord
+            remove_ambiguous_mask = (chromavec_labels != -1)
+
         assert(all(remove_ambiguous_mask))
 
     return chroma_vectors[remove_ambiguous_mask], chromavec_labels[remove_ambiguous_mask]
