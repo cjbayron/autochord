@@ -21,10 +21,12 @@ _MIN_BITMAP = mir_eval.chord.quality_to_bitmap('min')
 _MAJ7_BITMAP = mir_eval.chord.quality_to_bitmap('maj7')
 _MIN7_BITMAP = mir_eval.chord.quality_to_bitmap('min7')
 
-_MAJMIN_CLASSES = ['N', *[f'{note}:maj' for note in _CHROMA_NOTES],
+_NO_CHORD = 'N'
+_MAJMIN_CLASSES = [_NO_CHORD, *[f'{note}:maj' for note in _CHROMA_NOTES],
                    *[f'{note}:min' for note in _CHROMA_NOTES]]
 _MAJMIN7_CLASSES = _MAJMIN_CLASSES + [f'{chord}7' for chord in _MAJMIN_CLASSES[1:]]
 
+_NO_CHORD_INDEX = 0
 _MAJMIN_CLASS_INDEX_MAP = {chord:index for index,chord in enumerate(_MAJMIN_CLASSES)}
 _MAJMIN7_CLASS_INDEX_MAP = {chord:index for index,chord in enumerate(_MAJMIN7_CLASSES)}
 
@@ -148,6 +150,7 @@ def get_chord_features_and_labels(_id, label_type='majmin', remove_ambiguous=Tru
         if not all(remove_ambiguous_mask):
             assert(np.where(~remove_ambiguous_mask)[0][0]==st_ix)
             chromavec_labels[st_ix:] = chord_label # assign last chord
+            chromavec_labels[st_ix+1:] = _NO_CHORD_INDEX # assign the rest as no-chord
             remove_ambiguous_mask = (chromavec_labels != -1)
 
         assert(all(remove_ambiguous_mask))
