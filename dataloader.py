@@ -290,7 +290,7 @@ class SimpleChromaDataset():
         return train_split, val_splits, test_split
 
     def get_next_cv_split(self):
-        """ Cross-vaidation splits generator """
+        """ Cross-validation splits generator """
         assert ((self.train_split is not None) and (self.val_splits is not None))
         train_split, val_splits = self.train_split, self.val_splits
 
