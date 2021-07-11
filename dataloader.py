@@ -1,4 +1,5 @@
 """ Loader for Billboard data features and labels """
+import pickle
 import numpy as np
 from numpy.random import default_rng
 import pandas as pd
@@ -249,8 +250,8 @@ class SimpleChromaDataset():
             self.chroma_vectors = np.load(vectors_file)
             self.chord_labels = np.load(labels_file)
 
-        else: #TODO: implement extracting vectors and labels from the files
-            pass
+        else: #TODO: implement extracting vectors and labels from raw files
+            raise NotImplementedError
 
         self.classes = set(self.chord_labels)
         self.n_class = len(self.classes)
@@ -305,3 +306,45 @@ class SimpleChromaDataset():
                                                 *[split.labels for split in addl_train_splits]))
             full_train_split = SplitData(feats=full_train_feats,labels=full_train_labels)
             yield full_train_split, val_split
+
+
+class ChromaSequenceDataset():
+    """
+    Chroma vectors are batched into sequences
+    """
+
+    def __init__(self, pre_computed_sequence=None):
+        """
+        feat_label_files: tuple of NumPy binary files to load the data from,
+            interpreted as (vector_array_file, label_array_file)
+        """
+        self.chordseq_dict = None
+        if pre_computed_sequence:
+            with open(pre_computed_sequence, 'rb') as f:
+                self.chordseq_dict = pickle.load(f)
+
+        else: #TODO: implement extracting vectors and labels from raw files
+            raise NotImplementedError
+
+        print('Loaded sequence data.')
+
+    def get_next_cv_split(self, ref_idxs, num_folds=5, num_val=100):
+        """ Cross-validation splits generator """
+        assert(len(ref_idxs) >= (num_folds*num_val))
+        for i in range(num_folds):
+            st = i*num_val
+            ed = st+num_val
+            
+            val_idxs = ref_idxs[st:ed]
+            train_idxs = np.setdiff1d(ref_idxs, val_idxs)
+            
+            val_feats = np.concatenate([self.chordseq_dict[_id]['feats'] for _id in val_idxs])
+            val_labels = np.concatenate([self.chordseq_dict[_id]['labels'] for _id in val_idxs])
+            
+            train_feats = np.concatenate([self.chordseq_dict[_id]['feats'] for _id in train_idxs])
+            train_labels = np.concatenate([self.chordseq_dict[_id]['labels'] for _id in train_idxs])
+            
+            train_split = SplitData(feats=train_feats,labels=train_labels)
+            val_split = SplitData(feats=val_feats,labels=val_labels)
+
+            yield train_split, val_split
