@@ -133,3 +133,4 @@ data/*
 models/*
 refs/*
 guild-env/*
+temp/
