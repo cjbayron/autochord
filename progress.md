@@ -51,3 +51,25 @@
 ### 06/12
 
 - need to implement fully-labelled song
+
+### 07/19
+
+- working BiLSTM-CRF model (75-78 accuracy)
+- will try 2048 hidden dim
+
+### 07/21
+
+- achieved 90+ accuracy using:
+	- 512 hidden dim
+	- 0.05 drop rate
+	- 0.001 learning rate
+	- 128 batch size
+	- 15 epochs
+- it seems this can be improved further; but we PEND for now
+	- extend epochs, early stopping / best checkpoint
+- focus now on DEPLOYING! (w/in July pls???)
+
+### 07/22
+
+- use base_model for TFJS conversion; remember to compile
+- test if JS can load
