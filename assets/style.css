@@ -1,0 +1,32 @@
+.button {
+  display: inline-block;
+  margin: 14px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: inherit;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: #ffcf8f;
+  background: #a37166;
+	border-radius: 100px;
+  width: 150px;
+}
+
+.button[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.drop {
+  /*display: inline-block;*/
+  margin: 14px;
+  padding: 3px 8px;
+  font-family: inherit;
+  font-size: inherit;
+  /*text-transform: uppercase;*/
+  cursor: pointer;
+  color: #ffcf8f;
+  background: #a37166;
+  border-radius: 10px;
+  width: 150px;
+}
