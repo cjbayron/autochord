@@ -56,7 +56,11 @@ async function initAutoChordModel() {
   try {
     console.log('Loading chord recognition model...');
     //window.model = await tf.loadLayersModel('autochord-model/model.json');
-    window.model = await tf.loadLayersModel('models/tfjs/chroma-seq-bilstm-crf-0-base/model.json');
+    // window.model = await tf.loadGraphModel('models/tfjs/chroma-seq-bilstm-crf-0-base/model.json');
+    const modelUrl =
+    'https://storage.googleapis.com/tfjs-models/savedmodel/mobilenet_v2_1.0_224/model.json';
+    const model = await tf.loadGraphModel(modelUrl);
+
     console.log('Loaded.');
   } catch (e) {
     console.log(e)
