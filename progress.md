@@ -73,3 +73,18 @@
 
 - use base_model for TFJS conversion; remember to compile
 - test if JS can load
+
+### 07/26
+
+- Error: Unknown layer: Addons>CRF. This may be due to one of the following reasons
+1. The layer is defined in Python, in which case it needs to be ported to TensorFlow.js or your JavaScript code.
+2. The custom layer is defined in JavaScript, but is not registered properly with tf.serialization.registerClass().
+
+### 07/28
+
+- explore if saving as graph will solve the problem; otherwise we might need to port the model (hopefully not)
+
+### 07/29
+
+- need to be able to convert (via tfjs-converter) to graph model if we want to load as graph. error:
+	- ValueError: Unsupported Ops in the model before optimization
