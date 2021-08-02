@@ -88,3 +88,13 @@
 
 - need to be able to convert (via tfjs-converter) to graph model if we want to load as graph. error:
 	- ValueError: Unsupported Ops in the model before optimization
+
+### 08/01
+
+- Tried TF frozen graph -> tfjs graph model. same error
+- ReverseSequence is unsupported op in tfjs. submitted feature request
+- focus on Python API for now: check if working OK, then TRY adding graphics (e.g. turtle)
+
+### 08/02
+
+- incorrect evaluation. need to retrain.
