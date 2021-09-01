@@ -98,3 +98,26 @@
 ### 08/02
 
 - incorrect evaluation. need to retrain.
+
+### 08/19
+
+- can only achieve 67% using 128 sequence length (hd=128, lr=1e-3, ...)
+	- explore whether extending length is still feasible (e.g. in terms of inference speed)
+	- explore other features
+
+### 08/31
+
+- check guild-ai results then train a model using best hyperparams so far
+- analyze where the model fails
+	- what chords does it not recognize?
+	- is it because of the noise/sparsity of the features?
+	- can there be a full-song-based correction?
+
+### 09/01
+
+- bug in TF2.6???
+	- retry on another runtime
+	- NOPE
+- trained seq_len=128, hd=128, lr=1e-3, dp=0.1, bs=64
+	- acc: 67.33%
+	- ANALYZE
