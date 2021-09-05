@@ -6,13 +6,19 @@
     <link rel="stylesheet" href="assets/style.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/3.8.0/tf.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/3.8.0/tf.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@5.2.0/dist/wavesurfer.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@5.2.0/dist/plugin/wavesurfer.cursor.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@5.2.0/dist/plugin/wavesurfer.regions.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@5.2.0/dist/plugin/wavesurfer.timeline.min.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js@5.2.0/dist/plugin/wavesurfer.markers.min.js"></script>
     <script src="./app.js" defer></script>
 
   </head>
   <body>
-    <div align="center" hidden="true">
-    </div>
-
+    <br>
+    <div id="waveform" style="font-size:200%"></div>
+    <div id="wave-timeline"></div>
+    <br>
   </body>
 </html>
