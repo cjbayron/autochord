@@ -121,3 +121,15 @@
 - trained seq_len=128, hd=128, lr=1e-3, dp=0.1, bs=64
 	- acc: 67.33%
 	- ANALYZE
+
+### 09/05
+
+- able to do some analysis
+	- class_weights not working in TF unfortunately
+	- consider on-the-fly data augmentation/transformation (maybe on train_step in model.py)
+- visualize current output chords
+	- how wrong is it?
+	- do we really gain from re-training?
+	- try in JS
+- able to create initial UI
+	- better to pass chord information in compressed form (less processing in JS)
