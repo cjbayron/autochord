@@ -10,7 +10,8 @@ const waveStates = {
   PAUSE: 'pause'
 }
 let waveState = waveStates.PAUSE;
-let playButton;
+let playBtn;
+let inputBtn;
 /******************************/
 
 /******************************/
@@ -28,11 +29,15 @@ function setup() {
   // initAutoChordModel();
   displayWaveform();
 
-  playButton = createButton('PLAY')
-  playButton.position(30, 300);
-  playButton.attribute('class', 'button');
-  playButton.mouseReleased(playPause);
-  playButton.attribute('disabled', true)
+  let baseY = 300;
+  playBtn = createButton('PLAY')
+  playBtn.position(30, baseY); baseY += 70;
+  playBtn.attribute('class', 'button');
+  playBtn.mouseReleased(playPause);
+  playBtn.attribute('disabled', true)
+
+  inputBtn = createFileInput(readChordFile, false);
+  inputBtn.position(30, baseY);
 }
 
 function windowResized() { // automatically resize window
@@ -40,7 +45,7 @@ function windowResized() { // automatically resize window
 }
 
 function draw() {
-  background('#291f13'); // dark brown
+  background('#e5d7d4'); // dark brown
   initText(useColor='#f0c080', useFont=titlefont, useSize=titleSize, isTitle=true);
   
   let baseY = 80;
@@ -67,13 +72,21 @@ function initText(useColor='#f3c1a6', useFont=font, useSize=fontSize, isTitle=fa
 function playPause() {
   if (waveState == waveStates.PLAY) {
     wavesurfer.pause()
-    playButton.html('PLAY')
+    playBtn.html('PLAY')
     waveState = waveStates.PAUSE;
   } else if (waveState == waveStates.PAUSE) {
     wavesurfer.play()
-    playButton.html('PAUSE')
+    playBtn.html('PAUSE')
     waveState = waveStates.PLAY;
   }
+}
+
+function readChordFile(file) {
+  let base64data = file.data.replace(
+    'data:application/octet-stream;base64,','');
+
+  let chordText = atob(base64data);
+  console.log(chordText); // process
 }
 /******************************/
 
@@ -86,7 +99,15 @@ function displayWaveform() {
       progressColor: 'purple',
       scrollParent: true,
       plugins: [
-        WaveSurfer.cursor.create({showTime: true}),
+        WaveSurfer.cursor.create({
+          showTime: true,
+          opacity: 0.5,
+          customShowTimeStyle: {
+            'padding': '5px',
+            'padding-top': '100px',
+            'font-size': '12px'
+          }
+        }),
         WaveSurfer.regions.create({}),
         WaveSurfer.markers.create({}),
         WaveSurfer.timeline.create({
@@ -96,10 +117,10 @@ function displayWaveform() {
       ]
   });
 
-  wavesurfer.load('samples/audio.wav');
+  // wavesurfer.load('samples/audio.wav');
   wavesurfer.on('ready', function () {
     visualizeChords()
-    playButton.removeAttribute('disabled');
+    playBtn.removeAttribute('disabled');
   });
 }
 
