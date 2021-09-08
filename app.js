@@ -38,6 +38,7 @@ function setup() {
 
   inputBtn = createFileInput(readChordFile, false);
   inputBtn.position(30, baseY);
+  inputBtn.attribute('disabled', true)
 }
 
 function windowResized() { // automatically resize window
@@ -86,7 +87,8 @@ function readChordFile(file) {
     'data:application/octet-stream;base64,','');
 
   let chordText = atob(base64data);
-  console.log(chordText); // process
+  let chordLabels = chordText.split('\n');
+  visualizeChords(chordLabels);
 }
 /******************************/
 
@@ -98,6 +100,7 @@ function displayWaveform() {
       waveColor: 'violet',
       progressColor: 'purple',
       scrollParent: true,
+      minPxPerSec: 40,
       plugins: [
         WaveSurfer.cursor.create({
           showTime: true,
@@ -117,19 +120,52 @@ function displayWaveform() {
       ]
   });
 
-  // wavesurfer.load('samples/audio.wav');
+  wavesurfer.load('samples/audio.wav');
   wavesurfer.on('ready', function () {
-    visualizeChords()
     playBtn.removeAttribute('disabled');
+    inputBtn.removeAttribute('disabled');
   });
 }
 
-function visualizeChords() {
+function visualizeChords(chordLabels) {
+
+  let baseColorMap = ["#4A9CBB", "#9D6AFF"]
+  let positionMap = ["top", "bottom"]
+
+  chordLabels.forEach((line, i) => {
+    if (!line) // empty
+      return // continue
+
+    let labelComps = line.split('\t')
+    if (labelComps.length != 3)
+      return // continue
+
+    let st = labelComps[0];
+    let ed = labelComps[1];
+    let chordName = labelComps[2];
+    chordName = chordName.replace(':maj7','M7').replace(':min7','m7')
+                         .replace(':maj','').replace(':min', 'm')
+
+    wavesurfer.addMarker({
+      time: st,
+      label: chordName,
+      color: baseColorMap[i%2].concat("EE"),
+      position: positionMap[i%2]
+    })
+    
+    wavesurfer.addRegion({
+      start: st,
+      end: ed,
+      color: baseColorMap[i%2].concat("77"),
+      drag: false, resize: false
+    })
+  });
+
   // dummy chord regions
-  wavesurfer.addMarker({time: 10, label: 'C', color: "#4A9CBBEE", position: "top"})
-  wavesurfer.addRegion({start: 10, end: 15, color: "#4A9CBB77", drag: false, resize: false})
-  wavesurfer.addMarker({time: 15, label: 'Am', color: "#9D6AFFEE", position: "top"})
-  wavesurfer.addRegion({start: 15, end: 20, color: "#9D6AFF77", drag: false, resize: false})
+  // wavesurfer.addMarker({time: 10, label: 'C', color: "#4A9CBBEE", position: "top"})
+  // wavesurfer.addRegion({start: 10, end: 15, color: "#4A9CBB77", drag: false, resize: false})
+  // wavesurfer.addMarker({time: 15, label: 'Am', color: "#9D6AFFEE", position: "top"})
+  // wavesurfer.addRegion({start: 15, end: 20, color: "#9D6AFF77", drag: false, resize: false})
 }
 /******************************/
 
