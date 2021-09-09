@@ -5,6 +5,7 @@ let font;
 const titleSize = 50;
 const fontSize = 20;
 let wavesurfer;
+let wavesurfer2;
 const waveStates = {
   PLAY: 'play',
   PAUSE: 'pause'
@@ -29,7 +30,7 @@ function setup() {
   // initAutoChordModel();
   displayWaveform();
 
-  let baseY = 300;
+  let baseY = 450;
   playBtn = createButton('PLAY')
   playBtn.position(30, baseY); baseY += 70;
   playBtn.attribute('class', 'button');
@@ -73,10 +74,12 @@ function initText(useColor='#f3c1a6', useFont=font, useSize=fontSize, isTitle=fa
 function playPause() {
   if (waveState == waveStates.PLAY) {
     wavesurfer.pause()
+    wavesurfer2.pause()
     playBtn.html('PLAY')
     waveState = waveStates.PAUSE;
   } else if (waveState == waveStates.PAUSE) {
     wavesurfer.play()
+    wavesurfer2.play();
     playBtn.html('PAUSE')
     waveState = waveStates.PLAY;
   }
@@ -100,7 +103,7 @@ function displayWaveform() {
       waveColor: 'violet',
       progressColor: 'purple',
       scrollParent: true,
-      minPxPerSec: 40,
+      minPxPerSec: 80,
       plugins: [
         WaveSurfer.cursor.create({
           showTime: true,
@@ -115,7 +118,7 @@ function displayWaveform() {
         WaveSurfer.markers.create({}),
         WaveSurfer.timeline.create({
           container: "#wave-timeline",
-          timeInterval: 2.5,
+          timeInterval: 1,
         })
       ]
   });
@@ -125,12 +128,39 @@ function displayWaveform() {
     playBtn.removeAttribute('disabled');
     inputBtn.removeAttribute('disabled');
   });
+
+
+  wavesurfer2 = WaveSurfer.create({
+      container: '#waveform2',
+      waveColor: 'violet',
+      progressColor: 'purple',
+      scrollParent: true,
+      minPxPerSec: 80,
+      interact: false,
+      hideScrollbar: true,
+      plugins: [
+        WaveSurfer.regions.create({}),
+        WaveSurfer.markers.create({}),
+        WaveSurfer.timeline.create({
+          container: "#wave-timeline2",
+          timeInterval: 1,
+        })
+      ]
+  });
+
+  wavesurfer2.load('samples/audio.wav');
+  wavesurfer2.setMute(true);
+
+  wavesurfer.on('seek', (progress) => {
+    wavesurfer2.seekAndCenter(progress);
+  });
 }
 
 function visualizeChords(chordLabels) {
 
   let baseColorMap = ["#4A9CBB", "#9D6AFF"]
-  let positionMap = ["top", "bottom"]
+  let prevChord = 'N';
+  let chordCtr = 0;
 
   chordLabels.forEach((line, i) => {
     if (!line) // empty
@@ -146,19 +176,35 @@ function visualizeChords(chordLabels) {
     chordName = chordName.replace(':maj7','M7').replace(':min7','m7')
                          .replace(':maj','').replace(':min', 'm')
 
-    wavesurfer.addMarker({
-      time: st,
-      label: chordName,
-      color: baseColorMap[i%2].concat("EE"),
-      position: positionMap[i%2]
-    })
-    
-    wavesurfer.addRegion({
-      start: st,
-      end: ed,
-      color: baseColorMap[i%2].concat("77"),
-      drag: false, resize: false
-    })
+    if ((chordName == "N") || (chordName == "X"))
+      return // continue
+
+    if (chordName != prevChord) {
+      wavesurfer.addRegion({
+        start: st,
+        end: ed,
+        color: baseColorMap[chordCtr%2].concat("77"),
+        drag: false, resize: false
+      })
+
+      wavesurfer.addMarker({
+        time: st,
+        label: chordName,
+        color: baseColorMap[chordCtr%2].concat("EE"),
+        position: "top"
+      })
+
+      chordCtr++;
+    } else {
+      wavesurfer.addRegion({
+        start: st,
+        end: ed,
+        color: baseColorMap[(chordCtr-1)%2].concat("77"),
+        drag: false, resize: false
+      })
+    }
+
+    prevChord = chordName
   });
 
   // dummy chord regions
