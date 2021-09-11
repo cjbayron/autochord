@@ -2,17 +2,28 @@
 /* UI variables               */
 let titlefont;
 let font;
-const titleSize = 50;
-const fontSize = 20;
+const titleSize = 40;
+const fontSize = 18;
+const states = {
+  LOADING: 'load',
+  IDLE: 'idle'
+}
+let state = states.IDLE;
 let wavesurfer;
 let wavesurfer2;
+let otherChordFile;
+let waveData = null;
 const waveStates = {
   PLAY: 'play',
   PAUSE: 'pause'
 }
 let waveState = waveStates.PAUSE;
+let songInputBtn;
 let playBtn;
-let inputBtn;
+let chordInputBtn;
+let chordCompareBtn;
+let loadTimer;
+let loadProgress;
 /******************************/
 
 /******************************/
@@ -24,45 +35,69 @@ function preload() {
 }
 
 function setup() {
-  let cnv = createCanvas(windowWidth, windowHeight);
+  let cnv = createCanvas(windowWidth, 240);
+  cnv.parent('actions-container')
   cnv.style('display', 'block');
 
-  // initAutoChordModel();
-  displayWaveform();
+  loadDiv = select('#load-screen');
 
-  let baseY = 450;
+  // initAutoChordModel();
+  initWaveforms();
+
+  let baseY = 80;
+  let baseX = 30;
+
+  songInputBtn = createFileInput(loadSong, false);
+  songInputBtn.position(baseX+300, baseY); baseY += 30;
+
+  chordInputBtn = createFileInput(readMainChordFile, false);
+  chordInputBtn.position(baseX+300, baseY); baseY += 30;
+  chordInputBtn.attribute('disabled', true)
+
+  chordCompareBtn = createFileInput(readOtherChordFile, false);
+  chordCompareBtn.position(baseX+300, baseY); baseY += 30;
+  chordCompareBtn.attribute('disabled', true)
+
   playBtn = createButton('PLAY')
-  playBtn.position(30, baseY); baseY += 70;
+  playBtn.position(baseX, baseY);
   playBtn.attribute('class', 'button');
   playBtn.mouseReleased(playPause);
-  playBtn.attribute('disabled', true)
+  playBtn.attribute('disabled', true);
 
-  inputBtn = createFileInput(readChordFile, false);
-  inputBtn.position(30, baseY);
-  inputBtn.attribute('disabled', true)
 }
 
 function windowResized() { // automatically resize window
-  resizeCanvas(windowWidth, windowHeight);
+  resizeCanvas(windowWidth, 240);
 }
 
 function draw() {
-  background('#e5d7d4'); // dark brown
-  initText(useColor='#f0c080', useFont=titlefont, useSize=titleSize, isTitle=true);
+  background('#e5d7d4');
+  initText(useColor='#a17e50', useFont=titlefont, useSize=titleSize, isTitle=true);
   
-  let baseY = 80;
-  text('autochord', 30, baseY); baseY += 100;
+  let baseY = 50;
+  let baseX = 30;
+  text('autochord', baseX, baseY); baseY += 40;
+
+  initText();
+  text('Load song and predict chords:', 30, baseY); baseY += 30;
+  text('Load chords (override prediction):', 30, baseY); baseY += 30;
+  text('Load other chords (for comparing):', 30, baseY); baseY += 30;
+
+  if (state == states.LOADING) {
+    if ((millis() - loadTimer) > 500.0)
+      refreshLoading();
+  }
 }
 
 // p5 draw() helpers
-function initText(useColor='#f3c1a6', useFont=font, useSize=fontSize, isTitle=false) {
+function initText(useColor='#543b1b', useFont=font, useSize=fontSize, isTitle=false) {
   fill(useColor);
   textFont(useFont);
   textSize(useSize);
   textAlign(LEFT);
   if (isTitle) {
     strokeWeight(1);
-    stroke(248, 180, 120);
+    stroke('#dbb47f');
   } else {
     noStroke();
   }
@@ -71,6 +106,54 @@ function initText(useColor='#f3c1a6', useFont=font, useSize=fontSize, isTitle=fa
 
 /******************************/
 /* Control                    */
+function initLoading() {
+  state = states.LOADING;
+  loadTimer = millis();
+  loadProgress = 0;
+
+  songInputBtn.attribute('disabled', true);
+  chordInputBtn.attribute('disabled', true);
+  chordCompareBtn.attribute('disabled', true);
+  playBtn.attribute('disabled', true);
+}
+
+function finishLoading() {
+  songInputBtn.removeAttribute('disabled');
+  chordInputBtn.removeAttribute('disabled');
+  chordCompareBtn.removeAttribute('disabled');
+  playBtn.removeAttribute('disabled');
+
+  state = states.IDLE;
+  loadDiv.html('');
+}
+
+function refreshLoading() {
+  loadTimer = millis();
+  loadProgress += 1;
+  if (loadProgress > 3)
+    loadProgress = 0;
+
+  let loadText = 'Loading'
+  for (let i=0; i<loadProgress; i++)
+    loadText += '.'
+
+  loadDiv.html(loadText);
+}
+
+function loadSong(file) {
+  initLoading();
+  waveData = file.data;
+  
+  wavesurfer.clearRegions();
+  wavesurfer.clearMarkers();
+
+  wavesurfer2.clearRegions();
+  wavesurfer2.clearMarkers();
+  wavesurfer2.empty();
+
+  wavesurfer.load(waveData);
+}
+
 function playPause() {
   if (waveState == waveStates.PLAY) {
     wavesurfer.pause()
@@ -85,19 +168,29 @@ function playPause() {
   }
 }
 
-function readChordFile(file) {
+function readChordFile(file, waveObj) {
   let base64data = file.data.replace(
     'data:application/octet-stream;base64,','');
 
   let chordText = atob(base64data);
   let chordLabels = chordText.split('\n');
-  visualizeChords(chordLabels);
+  visualizeChords(waveObj, chordLabels);
+}
+
+function readMainChordFile(file) {
+  readChordFile(file, wavesurfer);
+}
+
+function readOtherChordFile(file) {
+  otherChordFile = file;
+  initLoading();
+  wavesurfer2.load(waveData);
 }
 /******************************/
 
 /******************************/
 /* Music visualization        */
-function displayWaveform() {
+function initWaveforms() {
   wavesurfer = WaveSurfer.create({
       container: '#waveform',
       waveColor: 'violet',
@@ -123,12 +216,9 @@ function displayWaveform() {
       ]
   });
 
-  wavesurfer.load('samples/audio.wav');
   wavesurfer.on('ready', function () {
-    playBtn.removeAttribute('disabled');
-    inputBtn.removeAttribute('disabled');
+    finishLoading();
   });
-
 
   wavesurfer2 = WaveSurfer.create({
       container: '#waveform2',
@@ -148,19 +238,28 @@ function displayWaveform() {
       ]
   });
 
-  wavesurfer2.load('samples/audio.wav');
   wavesurfer2.setMute(true);
-
   wavesurfer.on('seek', (progress) => {
+    wavesurfer2.seekAndCenter(progress);
+  });
+
+  wavesurfer2.on('ready', function () {
+    readChordFile(otherChordFile, wavesurfer2);
+    finishLoading();
+
+    let progress = wavesurfer.getCurrentTime() / wavesurfer.getDuration();
     wavesurfer2.seekAndCenter(progress);
   });
 }
 
-function visualizeChords(chordLabels) {
+function visualizeChords(waveObj, chordLabels) {
 
   let baseColorMap = ["#4A9CBB", "#9D6AFF"]
   let prevChord = 'N';
   let chordCtr = 0;
+
+  waveObj.clearRegions();
+  waveObj.clearMarkers();
 
   chordLabels.forEach((line, i) => {
     if (!line) // empty
@@ -174,20 +273,20 @@ function visualizeChords(chordLabels) {
     let ed = labelComps[1];
     let chordName = labelComps[2];
     chordName = chordName.replace(':maj7','M7').replace(':min7','m7')
-                         .replace(':maj','').replace(':min', 'm')
+                         .replace(':maj','').replace(':min', 'm').replace(':','')
 
     if ((chordName == "N") || (chordName == "X"))
       return // continue
 
     if (chordName != prevChord) {
-      wavesurfer.addRegion({
+      waveObj.addRegion({
         start: st,
         end: ed,
         color: baseColorMap[chordCtr%2].concat("77"),
         drag: false, resize: false
       })
 
-      wavesurfer.addMarker({
+      waveObj.addMarker({
         time: st,
         label: chordName,
         color: baseColorMap[chordCtr%2].concat("EE"),
@@ -196,7 +295,7 @@ function visualizeChords(chordLabels) {
 
       chordCtr++;
     } else {
-      wavesurfer.addRegion({
+      waveObj.addRegion({
         start: st,
         end: ed,
         color: baseColorMap[(chordCtr-1)%2].concat("77"),
@@ -206,12 +305,6 @@ function visualizeChords(chordLabels) {
 
     prevChord = chordName
   });
-
-  // dummy chord regions
-  // wavesurfer.addMarker({time: 10, label: 'C', color: "#4A9CBBEE", position: "top"})
-  // wavesurfer.addRegion({start: 10, end: 15, color: "#4A9CBB77", drag: false, resize: false})
-  // wavesurfer.addMarker({time: 15, label: 'Am', color: "#9D6AFFEE", position: "top"})
-  // wavesurfer.addRegion({start: 15, end: 20, color: "#9D6AFF77", drag: false, resize: false})
 }
 /******************************/
 
