@@ -133,3 +133,19 @@
 	- try in JS
 - able to create initial UI
 	- better to pass chord information in compressed form (less processing in JS)
+
+### 09/12
+
+- pretty much completed basic flow of autochord-js
+	- can view chords of a song
+	- can load chords
+	- can load other chords for comparison
+- next: do the actual analysis
+- IMPORTANT: from data_analysis.ipynb, we might have set `remove_ambiguous` to True for the features we used for training; consider this when retraining
+- some analysis:
+	- inconsistent handling of similar sections
+	- there's definitely something to improve on
+	- try more songs
+	- try direct from WAV
+- some bugs:
+	- post-playing actions??
