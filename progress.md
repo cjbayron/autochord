@@ -147,5 +147,21 @@
 	- there's definitely something to improve on
 	- try more songs
 	- try direct from WAV
-- some bugs:
+- some bugs/enhancements:
 	- post-playing actions??
+	- color mapping
+
+### 09/13
+
+- autochord-js analysis:
+	- again, inconsistent handling of similar sections
+	- on (There She Goes)
+		- it seems model is confused on relatively silent parts (e.g. intro)
+		- pretty much SAME performance on chordino (pre-generated) and WAV; WAV slightly better
+	- on (In My Room)
+		- mismatch on relatively silent parts as well
+		- VERY ACCURATE!
+		- same performance on chordino/wav as well
+- bugs:
+	- incorrect handling of color for consecutive same chords
+	- inconsistent display for enharmonic notes

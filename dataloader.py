@@ -25,7 +25,8 @@ _MIN7_BITMAP = mir_eval.chord.quality_to_bitmap('min7')
 _NO_CHORD = 'N'
 _MAJMIN_CLASSES = [_NO_CHORD, *[f'{note}:maj' for note in _CHROMA_NOTES],
                    *[f'{note}:min' for note in _CHROMA_NOTES]]
-_MAJMIN7_CLASSES = _MAJMIN_CLASSES + [f'{chord}7' for chord in _MAJMIN_CLASSES[1:]]
+_MAJMIN7_CLASSES = _MAJMIN_CLASSES + [f'{chord}7' for chord in _MAJMIN_CLASSES[1:]]\
+                   + [f'{chord}7' for chord in _CHROMA_NOTES] # dominant
 
 _NO_CHORD_INDEX = 0
 _MAJMIN_CLASS_INDEX_MAP = {chord:index for index,chord in enumerate(_MAJMIN_CLASSES)}
