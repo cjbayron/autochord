@@ -24,6 +24,55 @@ let chordInputBtn;
 let chordCompareBtn;
 let loadTimer;
 let loadProgress;
+
+const chordColor = {
+  'C': '#FFFF00', 'CM7': '#FFFF00', 'C7': '#FFFF00',
+    'Cm': '#E0FF00', 'Cm7': '#E0FF00',
+
+  'C#': '#C0FF00', 'C#M7': '#C0FF00',  'C#7': '#C0FF00',
+    'C#m': '#80FF00','C#m7': '#80FF00',
+  'Db': '#C0FF00', 'DbM7': '#C0FF00',  'Db7': '#C0FF00',
+    'Dbm': '#80FF00','Dbm7': '#80FF00',
+
+  'D': '#00FF00', 'DM7': '#00FF00', 'D7': '#00FF00',
+    'Dm': '#00FF80', 'Dm7': '#00FF80',
+
+  'D#': '#00FFC0', 'D#M7': '#00FFC0',  'D#7': '#00FFC0',
+    'D#m': '#00FFE0','D#m7': '#00FFE0',
+  'Eb': '#00FFC0', 'EbM7': '#00FFC0',  'Eb7': '#00FFC0',
+    'Ebm': '#00FFE0','Ebm7': '#00FFE0',
+
+  'E': '#00FFFF', 'EM7': '#00FFFF', 'E7': '#00FFFF',
+    'Em': '#00E0FF', 'Em7': '#00E0FF',
+
+  'F': '#00C0FF', 'FM7': '#00C0FF',  'F7': '#00C0FF',
+    'Fm': '#0080FF','Fm7': '#0080FF',
+
+  'F#': '#0000FF', 'F#M7': '#0000FF',  'F#7': '#0000FF',
+    'F#m': '#8000FF','F#m7': '#8000FF',
+  'Gb': '#0000FF', 'GbM7': '#0000FF',  'Gb7': '#0000FF',
+    'Gbm': '#8000FF','Gbm7': '#8000FF',
+
+  'G': '#C000FF', 'GM7': '#C000FF',  'G7': '#C000FF',
+    'Gm': '#E000FF','Gm7': '#E000FF',
+
+  'G#': '#FF00FF', 'G#M7': '#FF00FF', 'G#7': '#FF00FF',
+    'G#m': '#FF00E0', 'G#m7': '#FF00E0',
+  'Ab': '#FF00FF', 'AbM7': '#FF00FF', 'Ab7': '#FF00FF',
+    'Abm': '#FF00E0', 'Abm7': '#FF00E0',
+
+  'A': '#FF00C0', 'AM7': '#FF00C0', 'A7': '#FF00C0',
+    'Am': '#FF0080', 'Am7': '#FF0080',
+
+  'A#': '#FF0000','A#M7': '#FF0000', 'A#7': '#FF0000',
+    'A#m': '#FF8000', 'A#m7': '#FF8000',
+  'Bb': '#FF0000','BbM7': '#FF0000', 'Bb7': '#FF0000',
+    'Bbm': '#FF8000', 'Bbm7': '#FF8000',
+
+  'B': '#FFC000', 'BM7': '#FFC000', 'B7': '#FFC000',
+    'Bm': '#FFE000', 'Bm7': '#FFE000',
+};
+
 /******************************/
 
 /******************************/
@@ -220,6 +269,11 @@ function initWaveforms() {
     finishLoading();
   });
 
+  wavesurfer.on('finish', function () {
+    playBtn.html('PLAY')
+    waveState = waveStates.PAUSE;
+  });
+
   wavesurfer2 = WaveSurfer.create({
       container: '#waveform2',
       waveColor: 'violet',
@@ -250,6 +304,11 @@ function initWaveforms() {
     let progress = wavesurfer.getCurrentTime() / wavesurfer.getDuration();
     wavesurfer2.seekAndCenter(progress);
   });
+
+  wavesurfer2.on('finish', function () {
+    playBtn.html('PLAY')
+    waveState = waveStates.PAUSE;
+  });
 }
 
 function visualizeChords(waveObj, chordLabels) {
@@ -278,18 +337,22 @@ function visualizeChords(waveObj, chordLabels) {
     if ((chordName == "N") || (chordName == "X"))
       return // continue
 
+    let color = "#4A9CBB"; // default
+    if (chordName in chordColor)
+      color = chordColor[chordName]
+
     if (chordName != prevChord) {
       waveObj.addRegion({
         start: st,
         end: ed,
-        color: baseColorMap[chordCtr%2].concat("77"),
+        color: color.concat("77"),
         drag: false, resize: false
       })
 
       waveObj.addMarker({
         time: st,
         label: chordName,
-        color: baseColorMap[chordCtr%2].concat("EE"),
+        color: color.concat("EE"),
         position: "top"
       })
 
