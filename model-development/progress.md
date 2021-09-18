@@ -165,3 +165,35 @@
 - bugs:
 	- incorrect handling of color for consecutive same chords
 	- inconsistent display for enharmonic notes
+
+### 09/14
+
+- autochord-js more analysis:
+	- on (Kiss on my List)
+		- quite a few mismatches bet. chordino and WAV
+		- both can't capture a fast transition (but the transition is debatable)
+	- on (Do I Do)
+		- chordino and WAV more sensitive on bass at times
+		- lots of mismatches but, hard song!
+	- on (Human Nature)
+		- again, more sensitive on bass
+		- chordino seem closer to label, but there seem to be song mismatch
+- decision: PUBLISH but still try to train
+
+### 09/15
+
+- 1st PUBLISH version:
+	- fully-packaged Python code
+		- see https://github.com/ohollo/chord-extractor for VAMP plugin packaging
+	- separate JS app
+	- TODO:
+		- VAMP plugin as JS module (see piper?)
+		- tfjs model
+		- converting other Python functions to JS equivalent
+
+### 09/18
+
+- bugs (continuation) :
+	- incorrect handling of color for consecutive same chords
+	- inconsistent display for enharmonic notes
+	- not auto-seeking if loaded 2nd chords while playing
