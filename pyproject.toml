@@ -1,0 +1,13 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "gdown",
+    "numpy",
+    "scipy",
+    "librosa",
+    "vamp",
+    "lazycats",
+    "tensorflow>=2.6"
+]
+build-backend = "setuptools.build_meta"

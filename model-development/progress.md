@@ -197,3 +197,9 @@
 	- incorrect handling of color for consecutive same chords
 	- inconsistent display for enharmonic notes
 	- not auto-seeking if loaded 2nd chords while playing
+
+### 09/19
+
+- re-structured Python package
+	- working core functions
+	- TODO: package VAMP plugin
