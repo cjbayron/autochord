@@ -1,6 +1,7 @@
 """Main functions"""
 import os
 from shutil import copy
+import pkg_resources
 
 import numpy as np
 from scipy.signal import resample
@@ -10,7 +11,7 @@ import lazycats.np as catnp
 from tensorflow import keras
 
 
-_CHROMA_VAMP_LIB = '../src/res/nnls-chroma.so' # TODO
+_CHROMA_VAMP_LIB = pkg_resources.resource_filename('autochord', 'res/nnls-chroma.so')
 _CHROMA_VAMP_KEY = 'nnls-chroma:nnls-chroma'
 
 _CHORD_MODEL_URL = 'https://drive.google.com/uc?id=1XBn7FyYjF8Ff6EuC7PjwwPzFBLRXGP7n'
@@ -43,12 +44,12 @@ def _setup_chroma_vamp():
             # try to load to confirm if configured correctly
             vamp.vampyhost.load_plugin(_CHROMA_VAMP_KEY, _SAMPLE_RATE,
                                        vamp.vampyhost.ADAPT_NONE)
-            print(f'Using NNLS-Chroma VAMP plugin in {path}')
-            break
+            print(f'autochord: Using NNLS-Chroma VAMP plugin in {path}')
+            return
         except Exception as e:
             continue
 
-    print(f'WARNING: NNLS-Chroma VAMP plugin not setup properly. '
+    print(f'autochord WARNING: NNLS-Chroma VAMP plugin not setup properly. '
           f'Try copying `{_CHROMA_VAMP_LIB}` in any of following directories: {vamp_paths}')
 
 def _download_model():
@@ -59,7 +60,7 @@ def _download_model():
     model_files = gdown.extractall(model_zip)
     model_files.sort()
     os.remove(model_zip)
-    print(f'Chord model downloaded in {model_files[0]}')
+    print(f'autochord: Chord model downloaded in {model_files[0]}')
     return model_files[0]
 
 def _load_model():
@@ -69,11 +70,12 @@ def _load_model():
             _CHORD_MODEL_DIR = _download_model()
 
         _CHORD_MODEL = keras.models.load_model(_CHORD_MODEL_DIR)
-        print(f'Loaded model from {_CHORD_MODEL_DIR}')
+        print(f'autochord: Loaded model from {_CHORD_MODEL_DIR}')
     except Exception as e:
-        raise Exception(f'Error in loading model: {e}')
+        raise Exception(f'autochord: Error in loading model: {e}')
 
 def _init_module():
+    print('autochord: Initializing...')
     _setup_chroma_vamp()
     _load_model()
 
@@ -111,7 +113,11 @@ def predict_chord_labels(chroma_vectors):
     return pred_labels
 
 def recognize(audio_fn, lab_fn=None):
-    """ """
+    """
+    Perform chord recognition on provided audio file. Optionally,
+    you may dump the labels on a LAB file (MIREX format) through `lab_fn`.
+    """
+
     chroma_vectors = generate_chroma(audio_fn)
     pred_labels = predict_chord_labels(chroma_vectors)
 
@@ -120,14 +126,15 @@ def recognize(audio_fn, lab_fn=None):
     chord_timestamps = np.cumsum(chord_lengths)
 
     chord_labels = [_MAJMIN_CLASSES[label] for label in chord_labels]
-    out_labels = [f'{_STEP_SIZE*st}\t{_STEP_SIZE*ed}\t{chord_name}'
+    out_labels = [(_STEP_SIZE*st, _STEP_SIZE*ed, chord_name)
                   for st, ed, chord_name in 
                   zip(chord_timestamps[:-1], chord_timestamps[1:], chord_labels)]
 
     if lab_fn: # dump labels to file
+        str_labels = [f'{st}\t{ed}\t{chord_name}'
+                      for st, ed, chord_name in out_labels]
         with open(lab_fn, 'w') as f:
-            for line in out_labels:
+            for line in str_labels:
                 f.write("%s\n" % line)
 
-    # TODO: return raw (not str)
     return out_labels

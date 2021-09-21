@@ -194,9 +194,10 @@
 ### 09/18
 
 - bugs (continuation) :
-	- incorrect handling of color for consecutive same chords
-	- inconsistent display for enharmonic notes
-	- not auto-seeking if loaded 2nd chords while playing
+	/ incorrect handling of color for consecutive same chords
+	? inconsistent display for enharmonic notes
+	/ not auto-seeking if loaded 2nd chords while playing
+	- handling for incorrect audio file
 
 ### 09/19
 
