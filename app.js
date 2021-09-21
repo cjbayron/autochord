@@ -128,8 +128,8 @@ function draw() {
   text('autochord', baseX, baseY); baseY += 40;
 
   initText();
-  text('Load song and predict chords:', 30, baseY); baseY += 30;
-  text('Load chords (override prediction):', 30, baseY); baseY += 30;
+  text('Load song:', 30, baseY); baseY += 30;
+  text('Load chords:', 30, baseY); baseY += 30;
   text('Load other chords (for comparing):', 30, baseY); baseY += 30;
 
   if (state == states.LOADING) {
@@ -303,6 +303,8 @@ function initWaveforms() {
 
     let progress = wavesurfer.getCurrentTime() / wavesurfer.getDuration();
     wavesurfer2.seekAndCenter(progress);
+    if (wavesurfer.isPlaying())
+      wavesurfer2.play();
   });
 
   wavesurfer2.on('finish', function () {
@@ -315,7 +317,6 @@ function visualizeChords(waveObj, chordLabels) {
 
   let baseColorMap = ["#4A9CBB", "#9D6AFF"]
   let prevChord = 'N';
-  let chordCtr = 0;
 
   waveObj.clearRegions();
   waveObj.clearMarkers();
@@ -342,29 +343,20 @@ function visualizeChords(waveObj, chordLabels) {
       color = chordColor[chordName]
 
     if (chordName != prevChord) {
-      waveObj.addRegion({
-        start: st,
-        end: ed,
-        color: color.concat("77"),
-        drag: false, resize: false
-      })
-
       waveObj.addMarker({
         time: st,
         label: chordName,
         color: color.concat("EE"),
         position: "top"
       })
-
-      chordCtr++;
-    } else {
-      waveObj.addRegion({
-        start: st,
-        end: ed,
-        color: baseColorMap[(chordCtr-1)%2].concat("77"),
-        drag: false, resize: false
-      })
     }
+
+    waveObj.addRegion({
+      start: st,
+      end: ed,
+      color: color.concat("77"),
+      drag: false, resize: false
+    })
 
     prevChord = chordName
   });
@@ -374,6 +366,7 @@ function visualizeChords(waveObj, chordLabels) {
 /******************************/
 /* ML processing              */
 
+// TODO
 async function initAutoChordModel() {
   try {
     console.log('Loading chord recognition model...');
