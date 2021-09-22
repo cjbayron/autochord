@@ -134,4 +134,4 @@ model-development/models/*
 model-development/refs/*
 model-development/guild-env/*
 temp/
-!src/res/nnls-chroma.so
+!src/autochord/res/nnls-chroma.so

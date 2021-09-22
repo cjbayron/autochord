@@ -197,10 +197,18 @@
 	/ incorrect handling of color for consecutive same chords
 	? inconsistent display for enharmonic notes
 	/ not auto-seeking if loaded 2nd chords while playing
-	- handling for incorrect audio file
 
 ### 09/19
 
 - re-structured Python package
 	- working core functions
 	- TODO: package VAMP plugin
+
+### 09/21
+
+- bugs:
+	- handling for incorrect audio file
+- TODO:
+	- fix packaging issues
+	- try installing in a fresh virtualenv
+	- publish

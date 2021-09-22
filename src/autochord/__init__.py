@@ -5,6 +5,7 @@ import pkg_resources
 
 import numpy as np
 from scipy.signal import resample
+import gdown
 import librosa
 import vamp
 import lazycats.np as catnp
@@ -36,9 +37,10 @@ _MAJMIN_CLASSES = [_NO_CHORD, *[f'{note}:maj' for note in _CHROMA_NOTES],
 def _setup_chroma_vamp():
     # pylint: disable=c-extension-no-member
     vamp_paths = vamp.vampyhost.get_plugin_path()
+    vamp_lib_fn = os.path.basename(_CHROMA_VAMP_LIB)
     for path in vamp_paths:
         try:
-            if not os.path.exists(os.path.join(path, _CHROMA_VAMP_LIB)):
+            if not os.path.exists(os.path.join(path, vamp_lib_fn)):
                 os.makedirs(path, exist_ok=True)
                 copy(_CHROMA_VAMP_LIB, path)
             # try to load to confirm if configured correctly
