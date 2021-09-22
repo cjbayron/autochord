@@ -129,8 +129,9 @@ dmypy.json
 .pyre/
 
 # autochord
-data/*
-models/*
-refs/*
-guild-env/*
+model-development/data/*
+model-development/models/*
+model-development/refs/*
+model-development/guild-env/*
 temp/
+!src/autochord/res/nnls-chroma.so
