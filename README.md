@@ -51,7 +51,7 @@ The measured test accuracy of the TensorFlow model is 67.33%. That may be enough
 ## App Usage
 
 <p align="center">
-  <img src="images/autochord-js-ui.png" width="600"/>
+  <img src="https://github.com/cjbayron/autochord/blob/main/images/autochord-js-ui.png" width="600"/>
 </p>
 
 The app is pretty straightforward. First, you need to load the song you wish to visualize the chords of, then you can upload a LAB file to visualize its chord labels. You may use the `autochord` Python library for generating this file. Optionally, you may load another LAB file for comparison (e.g. ground-truth labels, LAB file from another model's prediction).
