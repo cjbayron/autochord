@@ -329,7 +329,7 @@ class ChromaSequenceDataset():
 
         print('Loaded sequence data.')
 
-    def get_next_cv_split(self, ref_idxs, num_folds=5, num_val=100):
+    def get_next_cv_split(self, ref_idxs, num_folds=5, num_val=100, return_index=False):
         """ Cross-validation splits generator """
         assert(len(ref_idxs) >= (num_folds*num_val))
         for i in range(num_folds):
@@ -348,4 +348,7 @@ class ChromaSequenceDataset():
             train_split = SplitData(feats=train_feats,labels=train_labels)
             val_split = SplitData(feats=val_feats,labels=val_labels)
 
-            yield train_split, val_split
+            if return_index:
+                yield train_split, val_split, train_idxs, val_idxs
+            else:
+                yield train_split, val_split
