@@ -48,6 +48,12 @@ Upon import `autochord` takes care of setting up the VAMP plugin and downloading
 
 The measured test accuracy of the TensorFlow model is 67.33%. That may be enough for some songs, but we can explore in the future how to further improve this.
 
+### Supported Environments
+
+- Library has been tested to work out-of-the-box for **Python 3** setup in **Ubuntu** (18.04).
+- **Windows** is unsupported (see [issue](https://github.com/cjbayron/autochord/issues/1#issuecomment-1257176042))
+- **OSX** _can_ be supported with [some tweaks](https://github.com/cjbayron/autochord/issues/2#issue-1583722364)
+
 ## App Usage
 
 <p align="center">
