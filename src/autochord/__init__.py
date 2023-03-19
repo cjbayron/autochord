@@ -114,18 +114,60 @@ def predict_chord_labels(chroma_vectors):
     assert len(pred_labels)==len(chroma_vectors)
     return pred_labels
 
-def recognize(audio_fn, lab_fn=None):
+def recognize(audio_fn, lab_fn=None, qpm=None, quarters_per_bar=4, offset=0):
     """
     Perform chord recognition on provided audio file. Optionally,
     you may dump the labels on a LAB file (MIREX format) through `lab_fn`.
+    If the song structure is known in advance (for example if it is a midi
+    render) you can specify the `qpm` (quarters per minute) and the guessing
+    process will work on bar segments rather than continuously.
+    When using bar-based guessing you may specify the bar count (the nominator
+    in the time signature, if the song is in 3/4 this would be "3", defaults
+    to 4 as most songs are in 4/4). If the song has an intro without music,
+    you may also specify `offset` to specify how much song to skip, in seconds.
     """
 
     chroma_vectors = generate_chroma(audio_fn)
     pred_labels = predict_chord_labels(chroma_vectors)
 
-    chord_labels = catnp.squash_consecutive_duplicates(pred_labels)
-    chord_lengths = [0] + list(catnp.contiguous_lengths(pred_labels))
-    chord_timestamps = np.cumsum(chord_lengths)
+    # If qpm is specified then we will use bar based guessing
+    if qpm:
+        chord_labels = []
+        chord_timestamps = []
+        bar_length = 60.0 / qpm * quarters_per_bar
+        samples_per_bar = bar_length / _STEP_SIZE
+
+        # How many samples to skip
+        sample_offset = offset * (1 / _STEP_SIZE)
+        bar_count = (len(pred_labels) - sample_offset) / samples_per_bar
+
+        # Do the guessing on each bar
+        for i in range(0, int(bar_count)):
+            start = round(sample_offset + i * samples_per_bar)
+            stop = round(sample_offset + (i+1) * samples_per_bar)
+
+            # Isolate bar
+            bar = pred_labels[start:stop]
+
+            # Find the chord that appears the most
+            chords_in_bar = set(bar)
+            max_n=0
+            winner=0
+            for chord in chords_in_bar:
+                chord_count = list(bar).count(chord)
+                if chord_count > max_n:
+                    winner=chord
+
+            # Save the found chord and its timestamp, skipping duplicates
+            if len(chord_labels) == 0 or chord_labels[-1] != winner:
+                chord_labels.append(winner)
+                timestamp = i * bar_length / _STEP_SIZE
+                timestamp += offset / _STEP_SIZE
+                chord_timestamps.append(timestamp)
+    else:
+        chord_labels = catnp.squash_consecutive_duplicates(pred_labels)
+        chord_lengths = [0] + list(catnp.contiguous_lengths(pred_labels))
+        chord_timestamps = np.cumsum(chord_lengths)
 
     chord_labels = [_MAJMIN_CLASSES[label] for label in chord_labels]
     out_labels = [(_STEP_SIZE*st, _STEP_SIZE*ed, chord_name)
